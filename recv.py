@@ -5,7 +5,7 @@
 #
 # João Paulo Barraca <jpbarraca@gmail.com>
 #
-import NRF24
+from ARDroneSwarm import NRF24
 import time
 
 pipes = [[0xe7, 0xe7, 0xe7, 0xe7, 0xe7], [0xc2, 0xc2, 0xc2, 0xc2, 0xc2]]
