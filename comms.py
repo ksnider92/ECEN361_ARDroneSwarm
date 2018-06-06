@@ -5,17 +5,18 @@ import spidev
 import math
 
 def callback(data):
-	print("Interrupted")
 	receivedMessage = []
         radio.read(receivedMessage, radio.getDynamicPayloadSize())
         string = ""
         for n in receivedMessage:
                 if (n >= 32 and n <= 126):
                         string += chr(n)
-	print(string)
-	ready = True
-	radio.stopListening()
-	radio.startListening()
+		if not string = ""
+			print("Interrupted")
+			print(string)
+			ready = True
+			radio.stopListening()
+			radio.startListening()
 
 ready = False
 wait = False
@@ -45,7 +46,7 @@ radio.printDetails()
 radio.startListening()
 
 while True:
-	"Input Something:"
+	print("Input Something:")
 	result = raw_input(">")
 	radio.write(result)
 	
