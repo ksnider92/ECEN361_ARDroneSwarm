@@ -1,0 +1,4 @@
+Run these to update the pi:
+sudo apt-get update
+sudo apt-get upgrade
+sudo rpi-update
