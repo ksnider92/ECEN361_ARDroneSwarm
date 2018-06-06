@@ -11,12 +11,13 @@ def callback(data):
         for n in receivedMessage:
                 if (n >= 32 and n <= 126):
                         string += chr(n)
-		if not string = ""
-			print("Interrupted")
-			print(string)
-			ready = True
-			radio.stopListening()
-			radio.startListening()
+			
+	if not string = ""
+		print("Interrupted")
+		print(string)
+		ready = True
+		radio.stopListening()
+		radio.startListening()
 
 ready = False
 wait = False
