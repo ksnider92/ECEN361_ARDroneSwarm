@@ -13,6 +13,7 @@ def callback(data):
         for n in receivedMessage:
                 if (n >= 32 and n <= 126):
                         string += chr(n)
+	print("String = ")
 	print(string)
 	global goals
 	global xLoc
