@@ -13,7 +13,7 @@ def callback(data):
         for n in receivedMessage:
                 if (n >= 32 and n <= 126):
                         string += chr(n)
-        if string[0] == 'd':
+        if string != "":
                 ready = True
         if ready:
                 print("String = ")
