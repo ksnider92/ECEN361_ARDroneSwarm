@@ -6,27 +6,29 @@ import spidev
 import math
 
 def callback(data):
-	print("Interrupted")
-	receivedMessage = []
+        print("Interrupted")
+        receivedMessage = []
         radio.read(receivedMessage, radio.getDynamicPayloadSize())
         string = ""
         for n in receivedMessage:
                 if (n >= 32 and n <= 126):
                         string += chr(n)
-	print("String = ")
-	print(string)
-	global goals
-	global xLoc
-	global yLoc
-	global xGoal
-	global yGoal
-	global ready
-	global wait
-	global angle
-	if string[1] == 'd':
-			ready = True
-	radio.stopListening()
-	radio.startListening()
+        if string[0] == 'd':
+                ready = True
+        if ready:
+                print("String = ")
+                print(string)
+                global goals
+                global xLoc
+                global yLoc
+                global xGoal
+                global yGoal
+                global ready
+                global wait
+                global angle
+                radio.stopListening()
+                radio.startListening()
+
 
 ready = False
 wait = False
