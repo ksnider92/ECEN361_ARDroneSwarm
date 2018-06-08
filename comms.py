@@ -12,7 +12,7 @@ def callback(data):
                 if (n >= 32 and n <= 126):
                         string += chr(n)
 								
-		if not string == "":
+		if string != "":
 			print("Interrupted")
 			print(string)
 			ready = True
