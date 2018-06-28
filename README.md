@@ -97,3 +97,9 @@ drone.start_navdata()
 ######################
 This file is a quick example of the library which enables you to command and receive info from your drone without even writing a single line of code.
 Look at this file to quickly understand how the program is working.
+
+Sizeable contributions made by:
+
+Original Python Code for ARDrone connections: https://github.com/Viq111/ARDroneLib
+
+Original C++ code, and base code for NRF modules: https://github.com/edoardoo/RF24RaspberryCommunicator
