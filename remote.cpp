@@ -8,8 +8,8 @@
 #include <map>
 #include <RF24/RF24.h>
 
-#define read_File "t.txt"
-#define write_File "s.txt"
+#define read_File "toC.txt"
+#define write_File "toPy.txt"
 #define sizeType unsigned short
 #define idType unsigned short
 #define testing true
@@ -171,16 +171,17 @@ bool sendMessage(string message) {
 	// Send the size of the message, then the message.
 	sSent = sendSize(size);
 	
-	// If a message has become available, receive it.
-	if (!radio.available()) {
-		receiveMessage();
-	}
-		
-	mSent = sendString(message);
-
-	if (!message.find("id-") && !message.find("gps"))
-		comms_collection[id] = message;
+	if (sSent) {
+		// If a message has become available, receive it.
+		if (!radio.available()) {
+			receiveMessage();
+		}
 	
+		mSent = sendString(message);
+	
+		if (!message.find("id-") && !message.find("gps"))
+			comms_collection[id] = message;
+	}
 	// Return that sending the message was successful.
 	return (sSent && mSent);
 }
