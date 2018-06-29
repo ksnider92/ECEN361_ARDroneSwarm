@@ -197,12 +197,12 @@ void analyzeMessage(idType sentId) {
  * message.
  **********************************/
 bool sendMessage(string message) {
-	// Declare local variables.
-	radio.stopListening();
-	
 	if (message.length() == 0) {
 		return true;
 	}
+	
+	// Declare local variables.
+	radio.stopListening();
 	
 	sizeType size = message.length();
 	bool sSent = false, mSent = false;
@@ -391,10 +391,6 @@ queue<string> readFromFile(string fileName) {
 	queue<string> *out = new queue<string>();
 	string ln;
 	ifstream in;
-	
-	if (testing) {
-		printf("Reading from file.\n");
-	}
 	
 	// Access the file.
 	in.open(fileName.c_str());
