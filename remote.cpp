@@ -13,6 +13,7 @@
 #define sizeType unsigned short
 #define idType unsigned short
 #define testing true
+#define testingConverters true
 
 using namespace std;
 
@@ -30,8 +31,8 @@ unsigned int waitTimeId = 10000;	// How long to wait (in ms) for an ID  before a
 // Pre-declare all base functions.
 void receiveMessage();
 bool sendMessage(string);
-bool writeToFile(char*, string);
-queue<string> readFromFile(char*);
+bool writeToFile(string fileName, string message);
+queue<string> readFromFile(string);
 bool sendSize(sizeType);
 bool sendString(string);
 sizeType convertSize(string);
@@ -46,12 +47,18 @@ void analyzeMessage(idType);
  *	what to do based on circumstances.
  **********************************/
 void receiveMessage() {
+	if (!radio.available()) {
+		return;
+	}
 	if (testing) {
 		printf("Receiving Message.\n");
 	}
 	if (size) {
 		radio.read( &messageSize, sizeof(sizeType) );
-		messageSize = (messageSize != 0 ? messageSize : sizeof(idType));
+		if (messageSize == 0) {
+			messageSize = sizeof(sizeType);
+			return;
+		}
 		size = false;
 		if (testing) {
 			printf("Received size: %d.\n", messageSize);
@@ -64,7 +71,7 @@ void receiveMessage() {
 		radio.read( &in, messageSize);
 		
 		if (testing) {
-			printf("Received message: %s.\n", in);
+			printf("Message size= %d.\n", in.length());
 		}
 		
 		if (in.length() <= sizeof(sizeType)) {
@@ -72,10 +79,14 @@ void receiveMessage() {
 			return;
 		}
 		
+		if (testing) {
+			printf("Received message: %s.\n", in.c_str());
+		}
+		
 		size = true;
 		
 		if (testing) {
-			printf("Grabbing id.\n", in);
+			printf("Grabbing id.\n");
 		}
 		
 		sentId = convertId(in.substr(0, sizeof(idType)));
@@ -88,7 +99,7 @@ void receiveMessage() {
 
 		
 		if (testing) {
-			printf("Message: %s. Analyzing message.\n", in);
+			printf("Message: %s. Analyzing message.\n", in.c_str());
 		}
 		// If the given message is a command, then store it for action decision making.
 		if (!in.find("id-")) {
@@ -121,7 +132,7 @@ void receiveMessage() {
 			sendMessage("sid-" + convertId(numDevices));
 			comms_collection[numDevices] = "";
 			writeToFile(write_File, "nid= " + convertId(numDevices));
-			printf("NumDevices = %s.\n", std::to_string(numDevices));
+			printf("NumDevices = %s.\n", std::to_string(numDevices).c_str());
 			return;
 			
 		// If the message is a response of a new id given, then keep track of how many devices are active.
@@ -130,7 +141,7 @@ void receiveMessage() {
 			numDevices = convertId(in.substr(4, sizeof(idType)));
 			comms_collection[numDevices] = "";
 			writeToFile(write_File, "nid= " + convertId(numDevices));
-			printf("NumDevices = %s.\n", std::to_string(numDevices));
+			printf("NumDevices = %s.\n", std::to_string(numDevices).c_str());
 			return;
 			
 		// If message is gps of other device, then pass the message on to python.
@@ -156,7 +167,7 @@ void analyzeMessage(idType sentId) {
 	// If the message is a command and the voting has come to a conclusion, then progress on.
 	else {
 		for (idType i = 1; i <= sentId; i++) {
-			map<string, int> votes;
+			map<string, idType> votes;
 			string command = comms_collection[i].substr(0, comms_collection[i].find("-"));
 			if (command != "agg") {
 				votes[command] = 1;
@@ -186,6 +197,12 @@ void analyzeMessage(idType sentId) {
  **********************************/
 bool sendMessage(string message) {
 	// Declare local variables.
+	radio.stopListening();
+	
+	if (message.length() == 0) {
+		return true;
+	}
+	
 	sizeType size = sizeof(message);
 	bool sSent = false, mSent = false;
 	
@@ -201,17 +218,14 @@ bool sendMessage(string message) {
 	if (/*sSent*/false) {
 		if (testing) {
 		}
-		
-		// If a message has become available, receive it.
-		if (!radio.available()) {
-			receiveMessage();
-		}
 	
 		mSent = sendString(message);
 	
 		if (!message.find("id-") && !message.find("gps"))
 			comms_collection[id] = message;
 	}
+	
+	radio.startListening();
 	// Return that sending the message was successful.
 	return (sSent && mSent);
 }
@@ -228,6 +242,9 @@ bool sendMessage(string message) {
 void getId() {
 	// Request id.
 	printf("\nRequesting id...\n");
+	
+	sendSize(128);
+	return;
 	sendMessage("rid-");
 	int time = millis();
 	
@@ -260,7 +277,7 @@ void getId() {
  * Sets up the entire system to be
  * ready to work properly.
  **********************************/
-void setup(void){
+void setup(){
 	if (testing) {
 		printf("\nSetting up device.\n");
 	}
@@ -272,8 +289,8 @@ void setup(void){
 	//Prepare the radio module
 	radio.begin();
 	radio.setRetries(15, 15);
-	//	radio.setChannel(0x4c);
-	radio.setPALevel(RF24_PA_MAX);
+	//radio.setChannel(0x4c);
+	//radio.setPALevel(RF24_PA_MAX);
 	radio.openWritingPipe(pipes[0]);
 	radio.openReadingPipe(1,pipes[1]);
 	
@@ -303,7 +320,7 @@ int main(int argc, char ** argv) {
 	
 	while (true) {
 		// If a message has become available, receive it.
-		if (!radio.available()) {
+		if (radio.available()) {
 			receiveMessage();
 		}
 		
@@ -319,12 +336,12 @@ int main(int argc, char ** argv) {
 		}
 		
 		// If a message has become available, receive it.
-		if (!radio.available()) {
+		if (radio.available()) {
 			receiveMessage();
 		}
 		
 		if (!toSend.empty())
-			if (sendMessage(toSend.front()))
+			if (sendSize(toSend.front().length()))
 					toSend.pop();
 	}
 }
@@ -336,13 +353,13 @@ int main(int argc, char ** argv) {
  * the passed-in string into end
  * of the file.
  **********************************/
-bool writeToFile(char* fileName, string data) {
+bool writeToFile(string fileName, string data) {
 	// Save all the data already in the file.
 	queue<string> oldData = readFromFile(fileName);
 
 	// Initialize the filestream.
 	ofstream file;
-	file.open(fileName);
+	file.open(fileName.c_str());
 	
 	// Add the data to the back of the file.
 	oldData.push(data);
@@ -365,7 +382,7 @@ bool writeToFile(char* fileName, string data) {
  * list of all the lines in the given
  * file.
  **********************************/
-queue<string> readFromFile(char* fileName) {
+queue<string> readFromFile(string fileName) {
 	// Allocate local variables.
 	queue<string> *out = new queue<string>();
 	string ln;
@@ -376,7 +393,7 @@ queue<string> readFromFile(char* fileName) {
 	}
 	
 	// Access the file.
-	in.open(fileName);
+	in.open(fileName.c_str());
 	while(!in.eof()) {
 		std::getline(in, ln);
 		out->push(ln);
@@ -387,7 +404,7 @@ queue<string> readFromFile(char* fileName) {
 	
 	// Initialize the filestream.
 	ofstream file;
-	file.open(fileName);
+	file.open(fileName.c_str());
 
 	// Empty the file.
 	file << "";
@@ -404,6 +421,10 @@ queue<string> readFromFile(char* fileName) {
  * Sends the passed-in long over RF.
  **********************************/
 bool sendSize(sizeType out) {
+	if (testing) {
+		printf("Sending size: %d.\n", out);
+	}
+	
 	// Declare local variables.
 	bool message_posted;
 
@@ -426,6 +447,10 @@ bool sendSize(sizeType out) {
  * Sends the passed-in string over RF.
  **********************************/
 bool sendString(string out) {
+	if (testing) {
+		printf("Sending message: %s.\n", out.c_str());
+	}
+	
 	// Declare local variables.
 	bool message_posted;
 	out = convertId(id) + "-" + out;
@@ -450,6 +475,10 @@ bool sendString(string out) {
  * the sizeType.
  **********************************/
 sizeType convertSize(string in) {
+	if (testingConverters) {
+		printf("Converting %s to decimal.", in.c_str());
+	}
+	
 	sizeType out = 0;
 	
 	// Convert each character to a value.
@@ -467,6 +496,9 @@ sizeType convertSize(string in) {
  * Turns a short into two chars.
  **********************************/
 string convertId(idType in) {
+	if (testingConverters) {
+		printf("Converting %d to id string.", in);
+	}
 	string out;
 	
 	// Add in each character.
@@ -484,6 +516,10 @@ string convertId(idType in) {
  * Turns two chars into a short.
  **********************************/
 idType convertId(string in) {
+	if (testingConverters) {
+		printf("Converting %s to number.", in.c_str());
+	}
+	
 	idType out = 0;
 	
 	// Convert each character to a value.
