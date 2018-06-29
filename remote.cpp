@@ -203,7 +203,7 @@ bool sendMessage(string message) {
 		return true;
 	}
 	
-	sizeType size = sizeof(message);
+	sizeType size = message.length();
 	bool sSent = false, mSent = false;
 	
 	if (testing) {
