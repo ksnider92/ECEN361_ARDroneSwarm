@@ -244,8 +244,6 @@ void getId() {
 	// Request id.
 	printf("\nRequesting id...\n");
 	
-	sendSize(128);
-	return;
 	sendMessage("rid-");
 	int time = millis();
 	
