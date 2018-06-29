@@ -14,6 +14,7 @@
 #define idType unsigned short
 #define testing true
 #define testingConverters true
+#define testingFiles false
 
 using namespace std;
 
@@ -331,10 +332,6 @@ int main(int argc, char ** argv) {
 			fromFile.pop();
 		}
 		
-		if (testing) {
-			printf("Reading from file.\n");
-		}
-		
 		// If a message has become available, receive it.
 		if (radio.available()) {
 			receiveMessage();
@@ -354,6 +351,9 @@ int main(int argc, char ** argv) {
  * of the file.
  **********************************/
 bool writeToFile(string fileName, string data) {
+	if (testingFiles) {
+		printf("Writing to file.\n");
+	}
 	// Save all the data already in the file.
 	queue<string> oldData = readFromFile(fileName);
 
@@ -383,6 +383,10 @@ bool writeToFile(string fileName, string data) {
  * file.
  **********************************/
 queue<string> readFromFile(string fileName) {
+	if (testingFiles) {
+		printf("Reading from file.\n");
+	}
+	
 	// Allocate local variables.
 	queue<string> *out = new queue<string>();
 	string ln;
