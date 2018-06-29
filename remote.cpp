@@ -46,8 +46,16 @@ void analyzeMessage(idType);
  *	what to do based on circumstances.
  **********************************/
 void receiveMessage() {
+	if (testing) {
+		printf("Receiving Message.\n");
+	}
 	if (size) {
 		radio.read( &messageSize, sizeof(sizeType) );
+		messageSize = (messageSize != 0 ? messageSize : sizeof(idType));
+		size = false;
+		if (testing) {
+			printf("Received size: %d.\n", messageSize);
+		}
 	}
 	else {
 		string in;
@@ -55,15 +63,33 @@ void receiveMessage() {
 
 		radio.read( &in, messageSize);
 		
-		if (in.length() == sizeof(sizeType)) {
+		if (testing) {
+			printf("Received message: %s.\n", in);
+		}
+		
+		if (in.length() <= sizeof(sizeType)) {
 			messageSize = convertSize(in);
 			return;
 		}
 		
+		size = true;
+		
+		if (testing) {
+			printf("Grabbing id.\n", in);
+		}
+		
 		sentId = convertId(in.substr(0, sizeof(idType)));
+		
+		if (testing) {
+			printf("ID: %d. Grabbing message.\n", sentId);
+		}
 		
 		in = in.substr(sizeof(idType), in.size() - sizeof(idType));
 
+		
+		if (testing) {
+			printf("Message: %s. Analyzing message.\n", in);
+		}
 		// If the given message is a command, then store it for action decision making.
 		if (!in.find("id-")) {
 			// If the command comes from the main device, then collect it in, and clear all old messages..
@@ -165,13 +191,17 @@ bool sendMessage(string message) {
 	
 	if (testing) {
 		// Show the user what is being sent.
-		printf("Sending: %s\n", message.c_str());
+		printf("Sending size: %d\n", size);
+		printf("Sending message: %s\n", message.c_str());
 	}
 	
 	// Send the size of the message, then the message.
 	sSent = sendSize(size);
 	
 	if (sSent) {
+		if (testing) {
+		}
+		
 		// If a message has become available, receive it.
 		if (!radio.available()) {
 			receiveMessage();
@@ -197,7 +227,7 @@ bool sendMessage(string message) {
  **********************************/
 void getId() {
 	// Request id.
-	printf("\nRequesting id...");
+	printf("\nRequesting id...\n");
 	sendMessage("rid-");
 	int time = millis();
 	
@@ -245,7 +275,7 @@ void setup(void){
 	//	radio.setChannel(0x4c);
 	radio.setPALevel(RF24_PA_MAX);
 	radio.openWritingPipe(pipes[1]);
-	radio.openReadingPipe(1,pipes[0]);
+	radio.openReadingPipe(1,pipes[1]);
 	
 	// Last line before system breaks if wired wrong.
 	if (testing) {
@@ -267,6 +297,9 @@ void setup(void){
 int main(int argc, char ** argv) {
 	setup();
 	queue<string> toSend;
+	if (testing) {
+		printf("Entering Loop.\n");
+	}
 	
 	while (true) {
 		// If a message has become available, receive it.
@@ -279,6 +312,10 @@ int main(int argc, char ** argv) {
 		while (!fromFile.empty()) {
 			toSend.push(fromFile.front());
 			fromFile.pop();
+		}
+		
+		if (testing) {
+			printf("Reading from file.\n");
 		}
 		
 		// If a message has become available, receive it.
@@ -333,6 +370,10 @@ queue<string> readFromFile(char* fileName) {
 	queue<string> *out = new queue<string>();
 	string ln;
 	ifstream in;
+	
+	if (testing) {
+		printf("Reading from file.\n");
+	}
 	
 	// Access the file.
 	in.open(fileName);
