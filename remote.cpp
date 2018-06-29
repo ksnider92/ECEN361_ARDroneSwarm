@@ -201,22 +201,20 @@ bool sendMessage(string message) {
 		return true;
 	}
 	
+	if (testing) {
+		printf("Sending message: %s\n", message.c_str());
+	}
+	
 	// Declare local variables.
 	radio.stopListening();
 	
 	sizeType size = message.length();
 	bool sSent = false, mSent = false;
 	
-	if (testing) {
-		// Show the user what is being sent.
-		printf("Sending size: %d\n", size);
-		printf("Sending message: %s\n", message.c_str());
-	}
-	
 	// Send the size of the message, then the message.
 	sSent = sendSize(size);
 	
-	if (/*sSent*/false) {
+	if (sSent) {
 		if (testing) {
 		}
 	
