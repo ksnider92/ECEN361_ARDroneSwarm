@@ -289,7 +289,7 @@ void setup(){
 	//radio.setChannel(0x4c);
 	//radio.setPALevel(RF24_PA_MAX);
 	radio.openWritingPipe(pipes[0]);
-	radio.openReadingPipe(1,pipes[1]);
+	radio.openReadingPipe(1,pipes[0]);
 	
 	// Last line before system breaks if wired wrong.
 	if (testing) {
@@ -392,7 +392,8 @@ queue<string> readFromFile(string fileName) {
 	in.open(fileName.c_str());
 	while(!in.eof()) {
 		std::getline(in, ln);
-		out->push(ln);
+		if(ln != "")
+			out->push(ln);
 	}
 	
 	// Close the file, and pass-back the lines.
