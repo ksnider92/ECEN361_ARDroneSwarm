@@ -198,7 +198,7 @@ bool sendMessage(string message) {
 	// Send the size of the message, then the message.
 	sSent = sendSize(size);
 	
-	if (sSent) {
+	if (/*sSent*/false) {
 		if (testing) {
 		}
 		
@@ -274,7 +274,7 @@ void setup(void){
 	radio.setRetries(15, 15);
 	//	radio.setChannel(0x4c);
 	radio.setPALevel(RF24_PA_MAX);
-	radio.openWritingPipe(pipes[1]);
+	radio.openWritingPipe(pipes[0]);
 	radio.openReadingPipe(1,pipes[1]);
 	
 	// Last line before system breaks if wired wrong.
