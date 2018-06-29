@@ -163,6 +163,11 @@ bool sendMessage(string message) {
 	sizeType size = sizeof(message);
 	bool sSent = false, mSent = false;
 	
+	if (testing) {
+		// Show the user what is being sent.
+		printf("Sending: %s\n", message.c_str());
+	}
+	
 	// Send the size of the message, then the message.
 	sSent = sendSize(size);
 	
@@ -173,11 +178,6 @@ bool sendMessage(string message) {
 		}
 	
 		mSent = sendString(message);
-
-		if (testing) {
-			// Show the user what is being sent.
-			printf("Sending: %s\n", message.c_str());
-		}
 	
 		if (!message.find("id-") && !message.find("gps"))
 			comms_collection[id] = message;
