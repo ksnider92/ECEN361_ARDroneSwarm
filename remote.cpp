@@ -71,6 +71,8 @@ void receiveMessage() {
 		
 		string out = "" + in;
 		
+		printf("Received message: %s.", in.c_str());
+		
 		writeToFile(write_File, out);
 		
 		messageSize--;
@@ -220,8 +222,14 @@ bool sendMessage(string message) {
 	sizeType size = message.length();
 	bool sSent = false, mSent = false;
 	
+	
+	if (testing) {
+		printf("Sending size: %d\n", size);
+	}
 	// Send the size of the message, then the message.
-	sSent = sendSize(size);
+	while (!sSent) {
+		sSent = sendSize(size);
+	}
 	
 	if (sSent) {
 		if (testing) {
@@ -294,7 +302,7 @@ void setup(){
 	//radio.setChannel(0x4c);
 	//radio.setPALevel(RF24_PA_MAX);
 	radio.openWritingPipe(pipes[0]);
-	radio.openReadingPipe(1,pipes[0]);
+	radio.openReadingPipe(1,pipes[1]);
 	
 	// Last line before system breaks if wired wrong.
 	if (testing) {
