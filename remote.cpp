@@ -54,18 +54,27 @@ void receiveMessage() {
 	if (testing) {
 		printf("Receiving Message.\n");
 	}
-	if (size) {
+	if (!messageSize) {
 		radio.read( &messageSize, sizeof(sizeType) );
 		if (messageSize == 0) {
 			messageSize = sizeof(sizeType);
 			return;
 		}
-		size = false;
 		if (testing) {
 			printf("Received size: %d.\n", messageSize);
 		}
 	}
 	else {
+		char in;
+		
+		radio.read( &in, sizeof(char) );
+		
+		string out = "" + in;
+		
+		writeToFile(write_File, out);
+		
+		messageSize--;
+		/*
 		string in;
 		idType sentId;
 
@@ -149,7 +158,7 @@ void receiveMessage() {
 		}
 		else if (in.find("gid-") && convertId(in.substr(4, sizeof(idType))) == id) {
 			writeToFile(write_File, convertId(sentId) + "-" + in);
-		}
+		}*/
 	}
 }
 
@@ -160,7 +169,7 @@ void receiveMessage() {
  * id of the sender, and on what the
  * message is.
  **********************************/
-void analyzeMessage(idType sentId) {
+/*void analyzeMessage(idType sentId) {
 	// If from main, determine if it is a command or not.
 	if (sentId == 1) {
 		writeToFile(write_File, comms_collection[sentId]);
@@ -186,7 +195,7 @@ void analyzeMessage(idType sentId) {
 			}
 		}
 	}
-}
+}*/
 
 /**********************************
  * Send Message
@@ -219,9 +228,6 @@ bool sendMessage(string message) {
 		}
 	
 		mSent = sendString(message);
-	
-		if (!message.find("id-") && !message.find("gps"))
-			comms_collection[id] = message;
 	}
 	
 	radio.startListening();
@@ -238,7 +244,7 @@ bool sendMessage(string message) {
  * or id. On timeout, or ensurance that
  * local is first, set local id to 1.
  **********************************/
-void getId() {
+/*void getId() {
 	// Request id.
 	printf("\nRequesting id...\n");
 	
@@ -266,7 +272,7 @@ void getId() {
 
 	// Output this devices id.
 	printf("ID: %d.\n", id);
-}
+}*/
 
 /**********************************
  * Setup
@@ -280,8 +286,7 @@ void setup(){
 	}
 	// Initialize ID.
 	id = 0;
-	size = true;
-	messageSize = sizeof(idType);
+	messageSize = 0;
 
 	//Prepare the radio module
 	radio.begin();
@@ -299,7 +304,7 @@ void setup(){
 	radio.printDetails();
 	radio.startListening();
 
-	getId();
+	//getId();
 }
 
 /**********************************
@@ -309,6 +314,7 @@ void setup(){
  * as often as they come up.
  **********************************/
 int main(int argc, char ** argv) {
+	printf("Char Size: %d.", sizeof(char));
 	setup();
 	queue<string> toSend;
 	if (testing) {
@@ -449,14 +455,17 @@ bool sendString(string out) {
 	}
 	
 	// Declare local variables.
-	bool message_posted;
+	bool message_posted = false;
 	out = convertId(id) + "-" + out;
 
 	// Prep the radio to send.
 	radio.stopListening();
 
 	// Attempt to send the message.
-	message_posted = radio.write( &out, sizeof(out) );
+	for (unsigned int i = 0; i < out.length(); i++) {
+		char send = out.at(i);
+		message_posted = radio.write( &send, sizeof(&send) );
+	}
 
 	// Start listening for returning messages.
 	radio.startListening();
