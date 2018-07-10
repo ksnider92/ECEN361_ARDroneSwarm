@@ -71,7 +71,7 @@ void receiveMessage() {
 		
 		string out = "" + in;
 		
-		printf("Received message: %s.", in.c_str());
+		printf("Received message: %c.\n", in);
 		
 		writeToFile(write_File, out);
 		
@@ -301,8 +301,8 @@ void setup(){
 	radio.setRetries(15, 15);
 	//radio.setChannel(0x4c);
 	//radio.setPALevel(RF24_PA_MAX);
-	radio.openWritingPipe(pipes[0]);
-	radio.openReadingPipe(1,pipes[1]);
+	radio.openWritingPipe(pipes[1]);
+	radio.openReadingPipe(1,pipes[0]);
 	
 	// Last line before system breaks if wired wrong.
 	if (testing) {
@@ -322,7 +322,7 @@ void setup(){
  * as often as they come up.
  **********************************/
 int main(int argc, char ** argv) {
-	printf("Char Size: %d.", sizeof(char));
+	//printf("Char Size: %d.", sizeof(char));
 	setup();
 	queue<string> toSend;
 	if (testing) {
@@ -443,7 +443,7 @@ bool sendSize(sizeType out) {
 	radio.stopListening();
 
 	// Attempt to send the message.
-	message_posted = radio.write( &out, sizeof(out) );
+	message_posted = radio.write( &out, sizeof(sizeType) );
 
 	// Start listening for returning messages.
 	radio.startListening();
