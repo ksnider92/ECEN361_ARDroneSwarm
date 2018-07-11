@@ -70,6 +70,7 @@ def choose_sequence(drone):
     print "2 - Command line test"
     print "3 - GUI Command Test"
     print "4 - GPS Test"
+    print "5 - allDrones"
     result = raw_input(">")
     if result == "1":
         takeoff_land(drone)
@@ -80,7 +81,11 @@ def choose_sequence(drone):
         command_GUI(drone)
     elif result == "4":
         print "-> Starting GPS Test ..."
-        GPS_Command(drone)      
+        GPS_Command(drone)
+    elif result == "5":
+	print "-> allDrones() ..."
+	while(True):
+	    allDrones(drone)
 
 # 1st Test: Just testing commands
 def takeoff_land(drone):
@@ -112,7 +117,10 @@ def menu_list(drone):
         result = raw_input(">")
         if result == "0": drone.emergency()
         if result == "1": drone.hover()
-        if result == "2": drone.takeoff()
+        if result == "2":
+            drone.takeoff()
+            time.sleep(2)
+            drone.land()
         if result == "3": drone.land()
         if result == "4": drone.forward()
         if result == "5": drone.backward()
@@ -121,6 +129,31 @@ def menu_list(drone):
         if result == "8": drone.calibrate()
         if result == "a": drone.reset()
         if result == "b": drone.set_config(activate_navdata=True)
+
+def allDrones(drone):
+
+    with open("t.txt") as f:
+      for line in f:
+    	line = line.rstrip('\n')
+
+	if line != "9":
+            if line == "0": drone.emergency()
+            if line == "1": drone.hover()
+            if line == "2": drone.takeoff()
+            if line == "3": drone.land()
+            if line == "4": drone.forward()
+            if line == "5": drone.backward()
+            if line == "6": drone.left()
+            if line == "7": drone.right()
+            if line == "8": drone.calibrate()
+            if line == "a": drone.reset()
+            if line == "b": drone.set_config(activate_navdata=True)
+            print line
+
+
+        fileName = open("test.txt", "w")
+        fileName.close()
+        time.sleep(2)
 
 # 3nd test
 def command_GUI(drone):
@@ -217,7 +250,9 @@ if __name__ == "__main__":
     # Tests
     # And abord is something went wrong
     try:
-        choose_sequence(drone)
+#        choose_sequence(drone)
+        while(True):
+            allDrones(drone)
     except KeyboardInterrupt:
         drone.stop()
     except:
