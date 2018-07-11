@@ -84,7 +84,7 @@ int main( int argc, char ** argv){
 				else{
 					printf("ok!\n\r");
 					messages.pop();
-					writeToFile(write_File, got_message);
+					writeToFile(write_File, message);
 				}
 				//Listen for ACK
 				radio.startListening();
