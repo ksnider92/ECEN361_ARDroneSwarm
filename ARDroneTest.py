@@ -151,9 +151,9 @@ def allDrones(drone):
             print line
 
 
-        fileName = open("test.txt", "w")
+        fileName = open("toPy.txt", "w")
         fileName.close()
-        time.sleep(2)
+        time.sleep(1)
 
 # 3nd test
 def command_GUI(drone):
