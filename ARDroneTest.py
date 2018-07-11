@@ -150,6 +150,7 @@ def allDrones(drone):
             if line == "b": drone.set_config(activate_navdata=True)
             if line != "" :print line
 
+        f.close()
 
         fileName = open("toPy.txt", "w")
         fileName.close()
