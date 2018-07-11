@@ -144,9 +144,11 @@ int main( int argc, char ** argv){
 			receiveMessage();
 		}
 		
-		if (!toSend.empty())
+		if (!toSend.empty()) {
+			printf("To send size %d.\n", toSend.size());
 			if (sendMessage(toSend.front()))
 					toSend.pop();
+		}
 	}
 }
 
@@ -190,20 +192,21 @@ bool writeToFile(string fileName, messageType data) {
  * file.
  **********************************/
 queue<messageType> readFromFile(string fileName) {
-	/*if (testingFiles) {
-		printf("Reading from file.\n");
-	}*/
+	//printf("Reading from file.\n");
 	
 	// Allocate local variables.
 	queue<messageType> *out = new queue<messageType>();
-	messageType ln;
+	string ln;
 	ifstream in;
 	
 	// Access the file.
 	in.open(fileName.c_str(), ios_base::in);
 	while(!in.eof()) {
-		in >> ln;
-		out->push(ln);
+		getline(in, ln);
+		if (ln != "") {
+			out->push(atoi(ln.c_str()));
+			printf("Read %s.\n", ln.c_str());
+		}
 	}
 	
 	// Close the file, and pass-back the lines.
