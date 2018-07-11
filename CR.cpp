@@ -21,79 +21,81 @@ RF24 radio(RPI_V2_GPIO_P1_22, RPI_V2_GPIO_P1_24, BCM2835_SPI_SPEED_8MHZ);
 const uint64_t pipes[2] = { 0xF0F0F0F0E1LL, 0xF0F0F0F0D2LL };
 //const uint8_t pipes[][6] = {"1Node","2Node"};
 
-// hack to avoid SEG FAULT, issue #46 on RF24 github https://github.com/TMRh20/RF24.git
-unsigned long  got_message;
-
 bool writeToFile(string fileName, messageType message);
 queue<messageType> readFromFile(string);
-
-void setup(void){
-	//Prepare the radio module
-	printf("\nPreparing interface\n");
-	radio.begin();
-	radio.setRetries( 15, 15);
-	//	radio.setChannel(0x4c);
-	//	radio.setPALevel(RF24_PA_MAX);
-	//	radio.setPALevel(RF24_PA_MAX);
-
-	radio.printDetails();
-	radio.openWritingPipe(pipes[1]);
-	radio.openReadingPipe(1,pipes[1]);
-	//	radio.startListening();
-
-}
-
+void receiveMessage();
+void sendMessage();
+queue<messageType> toSend, received;
+void setup();
 
 int main( int argc, char ** argv){
-
-	//	char choice;
 	setup();
-	queue<messageType> messages;
+	queue<messageType> newMessages;
 
 	//Define the options
 	while(true)
 	{
-      radio.startListening();
 		sleep(1);
 		if(radio.available())
 		{
-			//If we received the message in time, let's read it and print it
-			radio.read( &got_message, sizeof(unsigned long) );
-			printf("Now writing %lu.\n\r",got_message);
-			writeToFile(write_File, got_message);
+			receiveMessage();
       }
+		else if (toSend.size())
+		{
+			sendMessage();
+		}
 		else{
-			queue<messageType> newMessages = readFromFile(read_File);
+			newMessages = readFromFile(read_File);
 			
 			while (newMessages.size() > 0) {
-				messages.push(newMessages.front());
+				toSend.push(newMessages.front());
 				newMessages.pop();
-			}
-			
-			if (messages.size()) {
-				unsigned long message = messages.front();
-				radio.stopListening();
-				//	unsigned long message = action;
-				printf("Now sending  %lu...", message);
-				
-				//Send the message
-				bool ok = radio.write( &message, sizeof(unsigned long) );
-				if (!ok){
-					printf("failed...\n\r");
-				}
-				else{
-					printf("ok!\n\r");
-					messages.pop();
-					writeToFile(write_File, message);
-				}
-				//Listen for ACK
-				radio.startListening();
 			}
 		}
 	}
 
 	return 0;
 
+}
+
+/**********************************
+ * Receive Message
+ **********************************
+ * Receives a message from over RF,
+ * and writes it to the file.
+ **********************************/
+void receiveMessage() {
+	unsigned long  got_message;
+	
+	//If we received the message in time, let's read it and print it
+	radio.read( &got_message, sizeof(unsigned long) );
+	printf("Now writing %lu.\n\r", got_message);
+	writeToFile(write_File, got_message);
+}
+
+/**********************************
+ * Send Message
+ **********************************
+ * Sends the given message over RF.
+ **********************************/
+void sendMessage() {
+	unsigned long message = toSend.front();
+	radio.stopListening();
+	//	unsigned long message = action;
+	printf("Now sending  %lu...", message);
+	
+	//Send the message
+	bool ok = radio.write( &message, sizeof(unsigned long) );
+	if (!ok){
+		printf("failed...\n\r");
+	}
+	else{
+		printf("ok!\n\r");
+		toSend.pop();
+		writeToFile(write_File, message);
+	}
+	//Listen for ACK
+	radio.startListening();
 }
 
 /**********************************
@@ -135,9 +137,7 @@ bool writeToFile(string fileName, messageType data) {
  * list of all the lines in the given
  * file.
  **********************************/
-queue<messageType> readFromFile(string fileName) {
-	//printf("Reading from file.\n");
-	
+queue<messageType> readFromFile(string fileName) {	
 	// Allocate local variables.
 	queue<messageType> *out = new queue<messageType>();
 	string ln;
@@ -149,7 +149,7 @@ queue<messageType> readFromFile(string fileName) {
 		getline(in, ln);
 		if (ln != "") {
 			out->push(atoi(ln.c_str()));
-			printf("Read %s.\n", ln.c_str());
+			//printf("Read %s.\n", ln.c_str());
 		}
 	}
 	
@@ -167,4 +167,19 @@ queue<messageType> readFromFile(string fileName) {
 	file.close();
 	
 	return *out;
+}
+
+void setup(){
+	//Prepare the radio module
+	printf("\nPreparing interface\n");
+	radio.begin();
+	radio.setRetries( 15, 15);
+	//	radio.setChannel(0x4c);
+	//	radio.setPALevel(RF24_PA_MAX);
+	//	radio.setPALevel(RF24_PA_MAX);
+
+	radio.printDetails();
+	radio.openWritingPipe(pipes[1]);
+	radio.openReadingPipe(1,pipes[1]);
+	radio.startListening();
 }

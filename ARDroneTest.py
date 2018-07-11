@@ -239,6 +239,8 @@ def GPS_Command(drone):
 ##################
 if __name__ == "__main__":
     global drone
+    fileName = open("toPy.txt", "w")
+    fileName.close()
     print "> Welcome to " + str(prog_name) + " (r" + str(version) + ")"
     print "> By Vianney Tran, Romain Fihue, Giulia Guidi, Julien Lagarde (under CC BY-SA 3.0 license)"
     print "> Loading program ..."
