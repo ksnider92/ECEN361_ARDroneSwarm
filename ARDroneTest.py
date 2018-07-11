@@ -132,7 +132,7 @@ def menu_list(drone):
 
 def allDrones(drone):
 
-    with open("t.txt") as f:
+    with open("toPy.txt") as f:
       for line in f:
     	line = line.rstrip('\n')
 
@@ -148,7 +148,7 @@ def allDrones(drone):
             if line == "8": drone.calibrate()
             if line == "a": drone.reset()
             if line == "b": drone.set_config(activate_navdata=True)
-            print line
+            if line != "" :print line
 
 
         fileName = open("toPy.txt", "w")
