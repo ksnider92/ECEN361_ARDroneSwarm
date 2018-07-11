@@ -46,98 +46,50 @@ void setup(void){
 
 int main( int argc, char ** argv){
 
-//	char choice;
+	//	char choice;
 	setup();
-//	bool switched = false;
-	int counter = 0;
 	queue<messageType> messages;
 
 	//Define the options
-
-//	while(( choice = getopt( argc, argv, "m:")) != -1){
 	while(true)
 	{
-                radio.startListening();
+      radio.startListening();
 		sleep(1);
-//		if (choice == 'm'){
 		if(radio.available())
 		{
-
-
-        	//	unsigned long started_waiting_at = millis();
-        	//	bool timeout = false;
-//        		while ( ! radio.available() && ! timeout ) {
-                		//printf("%d", !radio.available());
-  //              		if (millis() - started_waiting_at > 1000 ){
-    //                    		timeout = true;
-      //          		}
-       	//		}
-
-        //		if( timeout ){
-                		//If we waited too long the transmission failed
-          //      		printf("Oh gosh, it's not giving me any response...\n\r");
-            //    		return false;
-        	//	}else{
-                		//If we received the message in time, let's read it and print it
-                		radio.read( &got_message, sizeof(unsigned long) );
-                		printf("Now writing %lu.\n\r",got_message);
-							writeToFile("t.txt", got_message);
-                		/* ofstream myfile;
-                		myfile.open ("t.txt");
-                		myfile << got_message;
-                		myfile.close(); */
-                //		return true;
-
-        	}
-
+			//If we received the message in time, let's read it and print it
+			radio.read( &got_message, sizeof(unsigned long) );
+			printf("Now writing %lu.\n\r",got_message);
+			writeToFile(write_File, got_message);
+      }
 		else{
-			        messages = readFromFile(read_File);
-						if (messages.size()) {
-								  unsigned long message = messages.front();;
-								  radio.stopListening();
-							//	unsigned long message = action;
-								printf("Now sending  %lu...", message);
-
-									//Send the message
-								bool ok = radio.write( &message, sizeof(unsigned long) );
-								if (!ok){
-											printf("failed...\n\r");
-								}else{
-											printf("ok!\n\r");
-											messages.pop();
-								}
-								//Listen for ACK
-								radio.startListening();
-					  }
+			queue<messageType> newMessages = readFromFile(read_File);
+			
+			while (newMessages.size() > 0) {
+				messages.push(newMessages.front());
+				newMessages.pop();
 			}
-
-//			printf("\n Talking with my NRF24l01+ friends out there....\n");
-
-//			while(switched == false && counter < 5){
-
-//				switched = sendMessage(atoi(optarg));
-
-//				counter ++;
-
-//				sleep(1);
-//			}
-
-
-//		}else{
-			// A little help:
-//			printf("\n\rIt's time to make some choices...\n");
-//			printf("\n\rTIP: Use -m idAction for the message to send. ");
-
-//
-//			printf("\n\rExample (id number 12, action number 1): ");
-//			printf("\nsudo ./remote -m 121\n");
-//		}
-
-		//return 0 if everything went good, 2 otherwise
-//		if (counter < 5)
-//			return 0;
-//		else
-//			return 2;
+			
+			if (messages.size()) {
+				unsigned long message = messages.front();
+				radio.stopListening();
+				//	unsigned long message = action;
+				printf("Now sending  %lu...", message);
+				
+				//Send the message
+				bool ok = radio.write( &message, sizeof(unsigned long) );
+				if (!ok){
+					printf("failed...\n\r");
+				}
+				else{
+					printf("ok!\n\r");
+					messages.pop();
+					writeToFile(write_File, got_message);
+				}
+				//Listen for ACK
+				radio.startListening();
+			}
+		}
 	}
 
 	return 0;
@@ -167,7 +119,7 @@ bool writeToFile(string fileName, messageType data) {
 
 	// Fill in the file.
 	while(!oldData.empty()) {
-		file << oldData.front();
+		file << oldData.front() << endl;
 		oldData.pop();
 	}
 
